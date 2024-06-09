@@ -16,6 +16,8 @@ function App() {
         {<Navigation />}
         <Routes>
         <Route path="/dashboard" element={<DashboardV2 />} />
+        <Route path="/analysis" element={<DashboardAnalysis />} />
+        <Route path="/monthly" element={<DashboardMonthly />} />
           {/* <Route path="/" element={<Dashboard />} /> */}
           {/* <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />

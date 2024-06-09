@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useState, useContext } from 'react';
+import React, { createContext, useMemo, useState, useContext, useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const ThemeContext = createContext();
@@ -33,7 +33,7 @@ const darkTheme = createTheme({
     },
     background: {
       default: '#121212',
-      paper: '#121212',
+      paper: '#1e1e1e',  // Darker paper background
     },
     text: {
       primary: '#fff',
@@ -42,7 +42,16 @@ const darkTheme = createTheme({
 });
 
 export const ThemeContextProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
+  // Read the initial theme from localStorage or default to 'light'
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme ? savedTheme : 'light';
+  });
+
+  // Update localStorage whenever the theme changes
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));

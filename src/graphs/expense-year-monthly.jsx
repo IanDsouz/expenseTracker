@@ -44,7 +44,7 @@ const ExpenseYearMonthlyGraph = ({ selectedYear, width, height }) => {
                                 ]}
                             />
                         <Bar dataKey="value" barSize={20} fill="#536DFE" />
-                        {/* <Line type="monotone" dataKey="value" stroke="#ff7300" name="Linear Trend" /> */}
+                        <Line type="monotone" dataKey="value" stroke="#ff7300" name="Linear Trend" />
                     </ComposedChart>
                 )}
             </Box>
