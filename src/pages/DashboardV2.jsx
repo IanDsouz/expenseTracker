@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Summary from '../components/summary';
 import Container from '@mui/material/Container';
+import {Typography } from '@mui/material';
 
 function DashboardV2() {
 
