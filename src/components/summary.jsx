@@ -1,79 +1,47 @@
-import React, { useState } from "react";
-import { styled } from "@mui/material/styles";
-import TextField from "@mui/material/TextField";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
-import TagSummary from "../graphs/Tag/tag-summary";
-import ExpenseYearMonthlyGraph from "../graphs/expense-year-monthly";
-import ExpenseTable from "../graphs/expense-monthly-table";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
+import React, { useState } from 'react';
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
-import Stack from '@mui/material/Stack';
-import ExpenseMonthlyPie from "../graphs/expense-monthly-pie"
-import ExpenseYearMonthlyStacked from "../graphs/expense-monthly-stacked"
+import dayjs, { Dayjs } from "dayjs";
+import ExpenseYearMonthlyGraph from '../graphs/expense-year-monthly';
+import SavingsComponent from '../components/Savings/SavingsComponent';
 
-import ExpenseYearlyAllMonthlyBarStacked from "../graphs/expense-yearly-all-monthly-bar-stacked"
-
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  ...theme.typography.body2,
+const DemoPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  textAlign: "center",
-  display: 'flex',
-  flexDirection: 'column',  // Align items vertically
-  alignItems: 'center',      // Center items horizontally
-  justifyContent: 'center',
-  color: theme.palette.text.secondary,
-  width: "410px",  // Add your specific width
-  height: "250px", // Add your specific height
-  borderRadius: theme.spacing(2),
+  marginBottom: '5px',
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
 }));
-
-const StyledPaperPie = styled(Paper)(({ theme }) => ({
-  ...theme.typography.body2,
-  padding: theme.spacing(2),
-  textAlign: "center",
-  display: 'flex',
-  flexDirection: 'column',  // Align items vertically
-  alignItems: 'center',      // Center items horizontally
-  justifyContent: 'center',
-  color: theme.palette.text.secondary,
-  width: "410px",  // Add your specific width
-  height: "250px", // Add your specific height
-  borderRadius: theme.spacing(2),
-}));
-
 
 function Summary() {
-  const currentYear = dayjs().year();
-  const currentMonth = dayjs().month() + 1;
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-
-  const handleMonthChange = (date) => {
-    setSelectedMonth(date.month() + 1);
-    setSelectedYear(date.year());
-  };
+const currentYear = dayjs().year();
+const [selectedYear, setSelectedYear] = useState(currentYear);
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={1}>
-        <Grid xs={4}>
-        <ExpenseYearMonthlyStacked  width={400} height={200} />
-
-        <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
-        
+    <Box sx={{ padding: 1 }} height={100} >
+      <Grid container spacing={1} >
+        <Grid xs={3} >
+        <DemoPaper>Improving Financial Habits</DemoPaper>
+        <DemoPaper>Improving Financial Habits</DemoPaper>
         </Grid>
-        <Grid xs={4}>
-        <div> div </div>
+        <Grid xs={3}>
+            <DemoPaper>My Cashflow for June</DemoPaper>
+            <DemoPaper>Stored For Goals</DemoPaper>
         </Grid>
-        <Grid xs={4}>
-        <Stack>
-                  
-        </Stack> 
+        <Grid xs={3}>
+            <DemoPaper>Upcoming Bills</DemoPaper>
+            <DemoPaper>Invest in My Future</DemoPaper>
+            <DemoPaper>Paying Off Loans</DemoPaper>
+        </Grid>
+        <Grid xs={3}>
+            <DemoPaper>
+              <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
+            </DemoPaper>
+            <DemoPaper>
+              <SavingsComponent></SavingsComponent>
+            </DemoPaper>
+            <DemoPaper>Paying Off Loans</DemoPaper>
         </Grid>
       </Grid>
     </Box>

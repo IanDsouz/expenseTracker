@@ -4,8 +4,9 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import { IconButton } from '@mui/material';
+import ThemeToggleButton from './ThemeToggleButton/ThemeToggleButton';
  
 function Navigation() {
 
@@ -27,12 +28,13 @@ function Navigation() {
             sx={{ mr: 2 }}
           >
             <MenuIcon />
-            
           </IconButton>
          
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             CashFlow
           </Typography>
+
+          <ThemeToggleButton />
 
           <Button color="inherit">Monthly</Button>
 
