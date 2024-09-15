@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/dashboard';
 import DashboardV2 from './pages/DashboardV2';
 import DashboardMonthly from './pages/DashboardMonthly';
+import DashboardAdmin from './pages/DashboardAdmin';
 import DashboardAnalysis from './pages/DashboardAnalysis';
 import Navigation from './components/navbar';
 import { ThemeContextProvider } from '../src/ThemeContext'
@@ -18,12 +18,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardV2 />} />
         <Route path="/analysis" element={<DashboardAnalysis />} />
         <Route path="/monthly" element={<DashboardMonthly />} />
-          {/* <Route path="/" element={<Dashboard />} /> */}
-          {/* <Route path="/login" element={<Login />} />
-          <Route path="/logout" element={<Logout />} />
-          
-          <Route path="/monthly" element={<DashboardMonthly />} />
-          <Route path="/analysis" element={<DashboardAnalysis />} /> */}
+        <Route path="/admin" element={<DashboardAdmin />} />
         </Routes>
       </BrowserRouter>
       </ThemeContextProvider>
