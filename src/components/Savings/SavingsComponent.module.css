@@ -1,0 +1,4 @@
+.scrollableList {
+    height: 400px; /* Adjust height as needed */
+    overflow: auto;
+}
