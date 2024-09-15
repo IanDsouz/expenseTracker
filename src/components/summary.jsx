@@ -6,9 +6,11 @@ import Grid from '@mui/material/Unstable_Grid2';
 import dayjs, { Dayjs } from "dayjs";
 import ExpenseYearMonthlyGraph from '../graphs/expense-year-monthly';
 import SavingsComponent from '../components/Savings/SavingsComponent';
+import ExpenseYearlyGraph from '../graphs/expense-yearly';
+import ExpenseYearlyAllMonthlyBarStacked from '../graphs/expense-yearly-all-monthly-bar-stacked';
 
 const DemoPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(2), 
   marginBottom: '5px',
   backgroundColor: theme.palette.background.paper,
   color: theme.palette.text.primary,
@@ -30,7 +32,15 @@ const [selectedYear, setSelectedYear] = useState(currentYear);
             <DemoPaper>Stored For Goals</DemoPaper>
         </Grid>
         <Grid xs={3}>
-            <DemoPaper>Upcoming Bills</DemoPaper>
+            <DemoPaper>
+              {/* display last */}
+            {/* <ExpenseYearlyGraph selectedYear={selectedYear} width={400} height={200}  >
+
+            </ExpenseYearlyGraph> */}
+
+            <ExpenseYearlyAllMonthlyBarStacked selectedYear={selectedYear} width={400} height={200} />
+
+            </DemoPaper>
             <DemoPaper>Invest in My Future</DemoPaper>
             <DemoPaper>Paying Off Loans</DemoPaper>
         </Grid>
