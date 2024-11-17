@@ -12,7 +12,7 @@ import ExpenseMonthlyCategory from "../graphs/Category/expense-monthly-category"
 import ExpenseTable from "../graphs/expense-monthly-table";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
