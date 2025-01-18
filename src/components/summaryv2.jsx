@@ -6,7 +6,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
 import ExpenseGraphHorizontal from "../graphs/expense-horizontal";
-import TagSummary from "../graphs/Tag/tag-summary";
+import TagSummary from "../graphs/tag/tag-summary";
 import ExpenseYearlyGraph from "../graphs/expense-yearly";
 import ExpenseYearMonthlyGraph from "../graphs/expense-year-monthly";
 import ExpenseTable from "../graphs/expense-monthly-table";
