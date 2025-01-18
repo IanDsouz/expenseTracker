@@ -5,14 +5,14 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
-import TagSummary from "../graphs/Tag/tag-summary";
+import TagSummary from "../graphs/tag/tag-summary";
 import ExpenseYearMonthlyGraph from "../graphs/expense-year-monthly";
 import ExpenseYearlyAllMonthlyBarStacked from "../graphs/expense-yearly-all-monthly-bar-stacked";
-import ExpenseMonthlyCategory from "../graphs/Category/expense-monthly-category"
+import ExpenseMonthlyCategory from "../graphs/category/expense-monthly-category"
 import ExpenseTable from "../graphs/expense-monthly-table";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({

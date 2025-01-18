@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { Box } from '@mui/system';
 
 const ExpenseYearlyGraph = ({ selectedYear, width, height }) => {
     const [data, setData] = useState([]);
@@ -24,8 +25,7 @@ const ExpenseYearlyGraph = ({ selectedYear, width, height }) => {
 
 
     return (
-        <div>
-            <h2>{selectedYear}</h2>
+        <Box>
             <BarChart width={width} height={height} data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -34,7 +34,8 @@ const ExpenseYearlyGraph = ({ selectedYear, width, height }) => {
                 <Legend />
                 <Bar dataKey="total" fill="#8884d8" />
             </BarChart>
-        </div>
+        </Box>
+
     );
 }
 

@@ -20,24 +20,24 @@ function Login () {
 
     try {
       // Create the POST request
-      const response = await axios.post(
-        'http://localhost:8000/token/',
-        user,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        }
-      );
+      // const response = await axios.post(
+      //   'http://localhost:8000/token/',
+      //   user,
+      //   {
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     withCredentials: true,
+      //   }
+      // );
 
-      console.log('response', response);
+      // console.log('response', response);
 
-      // Initialize the access & refresh token in local storage
-      localStorage.clear();
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      // // Initialize the access & refresh token in local storage
+      // localStorage.clear();
+      // localStorage.setItem('access_token', response.data.access);
+      // localStorage.setItem('refresh_token', response.data.refresh);
+      // axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
       
       // Redirect to the home page after successful login
       window.location.href = '/';

@@ -11,6 +11,7 @@ const ExpenseYearlyAllMonthlyBarStacked = ({ selectedYear, width, height }) => {
     useEffect(() => {
         axios.get(`http://127.0.0.1:8000/api/expense_all_yearly_monthly_total/2021`)
             .then((response) => {
+                console.log(response.data.data)
                 setData(response.data.data);
             })
             .catch((error) => {

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import Summary from '../components/summary';
 import Container from '@mui/material/Container';
+import AdminPage from './Admin/AdminPage';
 
-function Dashboard() {
+function DashboardAdmin() {
+
   return (
   <Container maxWidth="xl">
-    <Summary></Summary>
+    <AdminPage></AdminPage>
   </Container>
   );
 }
 
-export default Dashboard;
+export default DashboardAdmin;
