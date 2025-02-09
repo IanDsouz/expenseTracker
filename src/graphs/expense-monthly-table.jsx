@@ -1,261 +1,198 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import dayjs from "dayjs";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses }  from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import IconButton from "@mui/material/IconButton";
-import Collapse from "@mui/material/Collapse";
-import Box from "@mui/material/Box";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Collapse,
+  Box,
+  Chip,
+  Typography,
+} from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import Chip from '@mui/material/Chip';
 import { styled } from "@mui/material/styles";
 
+// Utility for formatting currency
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+    minimumFractionDigits: 2,
+  }).format(amount);
+
+// Styled table header
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    // backgroundColor: theme.palette.common.black,
-    // color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 100,
-  },
+  fontWeight: "bold",
+  backgroundColor: theme.palette.grey[200],
+  cursor: "pointer",
 }));
 
 const ExpenseTable = ({ selectedYear, selectedMonth, setTagData }) => {
-  const displayMonth = dayjs(`${selectedYear}-${selectedMonth}`);
-  const [data, setData] = useState(null);
-  const [rows, setRows] = useState(null);
+  const [data, setData] = useState(null); // Store API response
+  const [rows, setRows] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [sortBy, setSortBy] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
 
-  function createData(name, total, plannedExpense, expenses) {
-    return { name, total, plannedExpense, expenses };
-  }
   useEffect(() => {
     axios
       .get(
         `http://127.0.0.1:8000/api/expense_summary/${selectedYear}/${selectedMonth}`
       )
       .then((response) => {
-        const rows = response.data.expenses.map((expense) =>
-          createData(
-            expense.name,
-            expense.total,
-            expense.planned_expense,
-            expense.expenses
-          )
+        setData(response.data); // Store entire response
+        setRows(
+          response.data.expenses.map((expense) => ({
+            name: expense.name,
+            total: expense.total,
+            plannedExpense: expense.planned_expense,
+            difference: expense.planned_expense - expense.total,
+            expenses: expense.expenses,
+          }))
         );
-        setRows(rows);
-        setData(response.data);
       })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+      .catch((error) => console.error("Error fetching data:", error));
   }, [selectedYear, selectedMonth]);
 
   const handleRowClick = (index) => {
-    if (expandedRow === index) {
-      setExpandedRow(null);
-    } else {
-      setExpandedRow(index);
-    }
+    setExpandedRow(expandedRow === index ? null : index);
   };
 
   const handleSort = (column) => {
     if (sortBy === column) {
-      // If already sorted by this column, reverse the order
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      // If sorting by a new column, set it as the sort column and default to ascending order
       setSortBy(column);
       setSortOrder("asc");
     }
   };
 
-  let sortedRows = [];
+  const getDifferenceColor = (difference, plannedExpense) => {
+    const actualSpent = plannedExpense - difference; // Convert difference to actual amount spent
+    const spendingRatio = actualSpent / plannedExpense; // Percentage of budget used
+  
+    if (spendingRatio >= 1) return "red"; // Over budget
+    if (spendingRatio >= 0.5) return "orange"; // Between 50% and 100% of the budget (warning)
 
-  if (rows) {
-    sortedRows = [...rows];
-    if (sortBy) {
-      sortedRows.sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-      });
+    if (difference === 0) return "blue"; // Exact match
+    if (difference > 0) return "green"; // Under budget
+  
+    return "green"; // Well under 50% of the budget
+  };
+
+  const sortedRows = [...rows].sort((a, b) => {
+    if (sortBy === "name") {
+      return sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
     }
-  }
+    const aValue = a[sortBy] || 0;
+    const bValue = b[sortBy] || 0;
+    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+  });
 
-  if (!data) {
-    return <div>Loading...</div>;
-  }
+  if (!data) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
 
   return (
-    <TableContainer component={Paper} style={{ maxHeight: 400 } } >
-      <Table size="small" aria-label="a dense table">
-      <TableHead>
-        <TableRow>
-            <StyledTableCell onClick={() => handleSort("name")}>
-            Category{" "}
-            {sortBy === "name" && (
-                <span>
-                {sortOrder === "asc" ? (
-                    <ArrowUpwardIcon />
-                ) : (
-                    <ArrowDownwardIcon />
-                )}
-                </span>
-            )}
-            </StyledTableCell>
-            <StyledTableCell align="right" onClick={() => handleSort("plannedExpense")}>
-            Planned Expense{" "}
-            {sortBy === "plannedExpense" && (
-                <span>
-                {sortOrder === "asc" ? (
-                    <ArrowUpwardIcon />
-                ) : (
-                    <ArrowDownwardIcon />
-                )}
-                </span>
-            )}
-            </StyledTableCell>
-            <StyledTableCell align="right" onClick={() => handleSort("total")}>
-            Actual{" "}
-            {sortBy === "total" && (
-                <span>
-                {sortOrder === "asc" ? (
-                    <ArrowUpwardIcon />
-                ) : (
-                    <ArrowDownwardIcon />
-                )}
-                </span>
-            )}
-            </StyledTableCell>
-            <StyledTableCell
-            align="right"
-            onClick={() => handleSort("plannedExpense - total")}
-            >
-            Diff{" "}
-            {sortBy === "plannedExpense - total" && (
-                <span>
-                {sortOrder === "asc" ? (
-                    <ArrowUpwardIcon />
-                ) : (
-                    <ArrowDownwardIcon />
-                )}
-                </span>
-            )}
-            </StyledTableCell>
-        </TableRow>
-        </TableHead>
+<TableContainer component={Paper} sx={{ maxHeight: 450 }}>
+  <Table stickyHeader size="small">
+    <TableHead>
+      <TableRow>
+        <StyledTableCell onClick={() => handleSort("name")}>
+          Category{" "}
+          {sortBy === "name" && (sortOrder === "asc" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />)}
+        </StyledTableCell>
+        <StyledTableCell align="right" onClick={() => handleSort("plannedExpense")}>
+          Planned{" "}
+          {sortBy === "plannedExpense" && (sortOrder === "asc" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />)}
+        </StyledTableCell>
+        <StyledTableCell align="right" onClick={() => handleSort("total")}>
+          Actual{" "}
+          {sortBy === "total" && (sortOrder === "asc" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />)}
+        </StyledTableCell>
+        <StyledTableCell align="right" onClick={() => handleSort("difference")}>
+          Difference{" "}
+          {sortBy === "difference" && (sortOrder === "asc" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />)}
+        </StyledTableCell>
+      </TableRow>
+    </TableHead>
 
-        <TableBody style={{ overflowY: "auto" }}>
-          <TableRow
-            sx={{
-              "&:last-child td, &:last-child th": { border: 0 },
-              backgroundColor: "#f2f2f2",
-              fontWeight: "bold",
-            }}
-          >
-            <TableCell component="th" scope="row">
-              Totals
+    <TableBody>
+      {/* Total Row */}
+      <TableRow sx={{ backgroundColor: "#f2f2f2", fontWeight: "bold" }}>
+        <TableCell>Totals</TableCell>
+        <TableCell align="right">{formatCurrency(data.planned_budget)}</TableCell>
+        <TableCell align="right">{formatCurrency(data.total_expense)}</TableCell>
+        <TableCell align="right" sx={{ color: getDifferenceColor((data.planned_budget - data.total_expense), data.planned_budget) }}>
+          {formatCurrency(data.planned_budget - data.total_expense)}
+        </TableCell>
+      </TableRow>
+
+      {sortedRows.map((row, index) => (
+        <React.Fragment key={index}>
+          <TableRow sx={{ cursor: "pointer" }} onClick={() => handleRowClick(index)}>
+            <TableCell sx={{ width: "25%" }}>
+              <Typography sx={{ marginLeft: 1, fontSize: "0.8rem" }}>{row.name}</Typography>
             </TableCell>
-            <TableCell align="right">£{data.planned_budget}</TableCell>
-            <TableCell align="right">£{data.total_expense}</TableCell>
-            <TableCell
-              align="right"
-              className={
-                data.planned_budget - data.total_expense < 0
-                  ? "negative-value"
-                  : data.planned_budget - data.total_expense > 0
-                  ? "positive-value"
-                  : ""
-              }
-            >
-              £{(data.planned_budget - data.total_expense).toFixed(2)}
+            <TableCell align="right" sx={{ width: "25%" }}>
+              {formatCurrency(row.plannedExpense)}
+            </TableCell>
+            <TableCell align="right" sx={{ width: "25%" }}>
+              {formatCurrency(row.total)}
+            </TableCell>
+            <TableCell align="right" sx={{ width: "25%", color: getDifferenceColor(row.difference, row.plannedExpense) }}>
+              {formatCurrency(row.difference)}
             </TableCell>
           </TableRow>
-          {sortedRows.map((row, index) => (
-            <React.Fragment key={index}>
-              <TableRow style={{cursor:'pointer'}} onClick={() => handleRowClick(index)} 
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                }}
-              >
-                <TableCell component="th" scope="row">
-                  <IconButton
-                    aria-label="expand"
-                    size="small"
-                  >
-                    <ExpandMoreIcon
-                      className={
-                        expandedRow === index ? "expanded" : "collapsed"
-                      }
-                    />
-                  </IconButton>
-                  {row.name}
-                </TableCell>
-                <TableCell align="right">£{row.plannedExpense}</TableCell>
-                <TableCell align="right">£{row.total.toFixed(2)}</TableCell>
-                <TableCell
-                  align="right"
-                  className={
-                    row.plannedExpense - row.total < 0
-                      ? "negative-value"
-                      : row.plannedExpense - row.total > 0
-                      ? "positive-value"
-                      : ""
-                  }
-                >
-                  £{(row.plannedExpense - row.total).toFixed(2)}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={4} style={{ padding: "0px" }}>
-                  <Collapse
-                    in={expandedRow === index}
-                    timeout="auto"
-                    unmountOnExit
-                  >
-                    <Box margin={2}>
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Tag</TableCell>
-                            <TableCell align="right">Amount</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {row.expenses.map((expense, idx) => (
-                            <TableRow key={idx}>
-                              <TableCell>{expense.description}</TableCell>
-                              <TableCell onClick={() => setTagData(expense.tag)}>
-                              <Chip style={{cursor:'pointer'}} label={expense.tag.name}  color="primary" />
-                                      
-                                </TableCell>
-                              <TableCell align="right">
-                                £{expense.amount}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </Box>
-                  </Collapse>
-                </TableCell>
-              </TableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+
+          {/* Expandable Row */}
+          <TableRow>
+            <TableCell colSpan={4} sx={{ p: 0 }}>
+              <Collapse in={expandedRow === index} timeout="auto" unmountOnExit>
+                <Box m={0.5}>
+                  <Table size="small" sx={{ tableLayout: "fixed", borderCollapse: "collapse" }}>
+                    <TableBody>
+                      {row.expenses.map((expense, idx) => (
+                        <TableRow key={idx} sx={{ fontSize: "0.75rem", padding: 0, border: "none" }}>
+                          <TableCell sx={{ p: 0.5, fontSize: "0.75rem", border: "none" }}>
+                            {expense.description}
+                          </TableCell>
+                          <TableCell
+                            onClick={() => setTagData(expense.tag)}
+                            sx={{ p: 0.5, border: "none" }}
+                          >
+                            <Chip
+                              label={expense.tag.name}
+                              size="small"
+                              color="primary"
+                              sx={{
+                                cursor: "pointer",
+                                fontSize: "0.7rem",
+                                height: 20,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="right" sx={{ p: 0.5, fontSize: "0.75rem", border: "none" }}>
+                            {formatCurrency(expense.amount)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Collapse>
+            </TableCell>
+          </TableRow>
+        </React.Fragment>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
   );
 };
 
