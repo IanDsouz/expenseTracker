@@ -55,6 +55,9 @@ function Navigation() {
           <Button color="inherit" onClick={() => navigate('/admin')}>
             Admin
           </Button>
+          <Button color="inherit" onClick={() => navigate('/saved')}>
+            Saved
+          </Button>
         </Toolbar>
       </AppBar>
 

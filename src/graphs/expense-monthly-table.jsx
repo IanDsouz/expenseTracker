@@ -74,14 +74,21 @@ const ExpenseTable = ({ selectedYear, selectedMonth, setTagData }) => {
 
   const getDifferenceColor = (difference, plannedExpense) => {
     const actualSpent = plannedExpense - difference; // Convert difference to actual amount spent
-    const spendingRatio = actualSpent / plannedExpense; // Percentage of budget used
-  
-    if (spendingRatio >= 1) return "red"; // Over budget
-    if (spendingRatio >= 0.5) return "orange"; // Between 50% and 100% of the budget (warning)
+    const spendingRatio =  (actualSpent / plannedExpense) * 100; // Percentage of budget used
 
-    if (difference === 0) return "blue"; // Exact match
-    if (difference > 0) return "green"; // Under budget
-  
+    if(difference === 0) return "green";
+
+    if(difference < 0)
+    {
+      if(spendingRatio > 110)
+      {
+        return "red";
+      }
+      return "maroon"
+    }
+
+    if (difference > 0 & spendingRatio >= 50)  return "orange";// Between 50% and 100% of the budget (warning)
+
     return "green"; // Well under 50% of the budget
   };
 
