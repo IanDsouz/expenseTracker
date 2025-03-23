@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BarChart, Line, ComposedChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
-import Card from '@mui/material/Card';
-import Paper from "@mui/material/Paper";
+import {Line, ComposedChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { Box } from '@mui/system';
 
 const ExpenseYearMonthlyGraph = ({ selectedYear, width, height }) => {

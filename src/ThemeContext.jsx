@@ -22,22 +22,37 @@ const lightTheme = createTheme({
   },
 });
 
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#90caf9',
+      main: '#1e88e5', // Bright blue
     },
     secondary: {
-      main: '#f48fb1',
+      main: '#f50057', // Vibrant pink
     },
     background: {
-      default: '#121212',
-      paper: '#1e1e1e',  // Darker paper background
+      default: '#0d0d0d', // Almost black
+      paper: '#1a1a1a',   // Slightly lighter black for cards and surfaces
     },
     text: {
-      primary: '#fff',
+      primary: '#e0e0e0', // Soft white for primary text
+      secondary: '#b0b0b0', // Grey for secondary text
     },
+    divider: '#333333', // Subtle divider lines
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none', // Removes default gradient
+        },
+      },
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif', // Optional: Customize font family
   },
 });
 
@@ -45,7 +60,7 @@ export const ThemeContextProvider = ({ children }) => {
   // Read the initial theme from localStorage or default to 'light'
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme ? savedTheme : 'light';
+    return savedTheme ? savedTheme : 'dark';
   });
 
   // Update localStorage whenever the theme changes
@@ -54,11 +69,11 @@ export const ThemeContextProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
   const themeValue = useMemo(() => {
-    const muiTheme = theme === 'light' ? lightTheme : darkTheme;
+    const muiTheme = theme === 'dark' ? darkTheme : lightTheme;
     return { theme, toggleTheme, muiTheme };
   }, [theme]);
 

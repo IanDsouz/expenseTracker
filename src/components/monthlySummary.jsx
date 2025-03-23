@@ -73,7 +73,6 @@ function MonthlySummary() {
             <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
            </StyledPaper> 
           </Stack>
-          
         </Grid>
         <Grid xs={5}>
         <TagSummary tag={tagData} selectedYear={selectedYear} selectedMonth={selectedMonth} > </TagSummary>
