@@ -13,7 +13,7 @@ const ExpenseMonthlyCategory = ({ category,selectedYear, width, height }) => {
       if (error) return <div>Error fetching data: {error.message}</div>;
 
     return (
-        <Box>
+        <Box  xs={{border: '1px dashed grey'}} >
             {loading ? (
                 <p>Loading...</p>
             ) : error ? (

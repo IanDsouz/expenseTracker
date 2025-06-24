@@ -11,21 +11,18 @@ import ExpenseMonthlyCategory from "../graphs/category/expense-monthly-category"
 import ExpenseTable from "../graphs/expense-monthly-table";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#fff',
   ...theme.typography.body2,
-  padding: theme.spacing(2),
-  textAlign: "center",
-  display: 'flex',
-  flexDirection: 'column', 
-  alignItems: 'center', 
-  justifyContent: 'center',
+  padding: theme.spacing(1),
+  textAlign: 'center',
   color: theme.palette.text.secondary,
-  width: "410px", 
-  height: "250px",
-  borderRadius: theme.spacing(2),
+  ...theme.applyStyles('dark', {
+    backgroundColor: '#1A2027',
+  }),
 }));
 
 function MonthlySummary() {
@@ -43,26 +40,25 @@ function MonthlySummary() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Paper style={{width:"200px"}}> 
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            views={['month', 'year']}
-            value={selectedDate}
-            onChange={handleMonthChange}
-            inputFormat="MM/yyyy"
-            minDate={dayjs("2018-01-01")}
-            maxDate={dayjs()}
-            renderInput={(params) => (
-              <TextField {...params} variant="outlined" />
-            )}
-          />
-        </LocalizationProvider>
+    <Box sx={{ flexGrow: 1, p: 1}} >
+         <Paper style={{width:"150px"}}> 
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                views={['month', 'year']}
+                value={selectedDate}
+                onChange={handleMonthChange}
+                inputFormat="MM/yyyy"
+                minDate={dayjs("2018-01-01")}
+                maxDate={dayjs()}
+                renderInput={(params) => (
+                  <TextField {...params} variant="outlined" />
+                )}
+              />
+            </LocalizationProvider>
       </Paper>
-      <Grid container spacing={1}>
-        <Grid xs={4}>
-          <Stack direction="row" spacing={2}>
-          <ExpenseTable 
+      <Grid container spacing={2}>
+        <Grid size={4}>
+        <ExpenseTable 
           selectedYear={selectedYear}
           selectedMonth={selectedMonth}
           onTagClick={(tag) => {
@@ -70,29 +66,29 @@ function MonthlySummary() {
             setIsTagModalOpen(true);
           }}
           />
-          </Stack>
         </Grid>
-
-        <Grid xs={3}>
-        <ExpenseMonthlyCategory category="Outside Food" selectedYear={selectedYear} width={300} height={150} />  
-        <ExpenseMonthlyCategory category="Takeway" selectedYear={selectedYear} width={300} height={150} />                  
-        <ExpenseMonthlyCategory category="Shopping" selectedYear={selectedYear} width={300} height={150} />         
+        <Grid size={2}>
+        <ExpenseMonthlyCategory category="Outside Food" selectedYear={selectedYear} width={250} height={130} />  
+        <ExpenseMonthlyCategory category="Takeway" selectedYear={selectedYear} width={250} height={130} />                  
+        <ExpenseMonthlyCategory category="Car" selectedYear={selectedYear} width={250} height={130} /> 
+        <ExpenseMonthlyCategory category="Tech" selectedYear={selectedYear} width={250} height={130} />
         </Grid>
-        <Grid xs={3}>
-        <Stack> 
-        <ExpenseMonthlyCategory category="Groceries" selectedYear={selectedYear} width={300} height={150} />  
-        <ExpenseMonthlyCategory category="Transportation" selectedYear={selectedYear} width={300} height={150} />                     
-        </Stack> 
+        <Grid size={2}>
+        <ExpenseMonthlyCategory category="Groceries" selectedYear={selectedYear} width={250} height={130} />  
+        <ExpenseMonthlyCategory category="Shopping" selectedYear={selectedYear} width={250} height={130} />                   
+        <ExpenseMonthlyCategory category="Transportation" selectedYear={selectedYear} width={250} height={130} />  
+        <ExpenseMonthlyCategory category="Hotel" selectedYear={selectedYear} width={250} height={130} /> 
         </Grid>
-        <Grid xs={2}>
-        <Stack> 
-        <StyledPaper >
-            <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
-           </StyledPaper>      
-        </Stack> 
+        <Grid size={4}>
+        <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />
+        </Grid>
+        <Grid size={4}>
+          <Item>size=4</Item>
+        </Grid>
+        <Grid size={8}>
+          <Item>size=8</Item>
         </Grid>
       </Grid>
-
       <TagSummaryModal
           open={isTagModalOpen}
           onClose={() => setIsTagModalOpen(false)}
@@ -101,8 +97,6 @@ function MonthlySummary() {
           selectedMonth={selectedMonth}
         />
     </Box>
-
-    
   ); 
 }
 
