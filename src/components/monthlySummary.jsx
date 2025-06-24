@@ -5,9 +5,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
-import TagSummary from "../graphs/tag/tag-summary";
+import TagSummaryModal from "../graphs/tag/tag-summary";
 import ExpenseYearMonthlyGraph from "../graphs/expense-year-monthly";
-import ExpenseYearlyAllMonthlyBarStacked from "../graphs/expense-yearly-all-monthly-bar-stacked";
 import ExpenseMonthlyCategory from "../graphs/category/expense-monthly-category"
 import ExpenseTable from "../graphs/expense-monthly-table";
 import Box from "@mui/material/Box";
@@ -20,12 +19,12 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: "center",
   display: 'flex',
-  flexDirection: 'column',  // Align items vertically
-  alignItems: 'center',      // Center items horizontally
+  flexDirection: 'column', 
+  alignItems: 'center', 
   justifyContent: 'center',
   color: theme.palette.text.secondary,
-  width: "410px",  // Add your specific width
-  height: "250px", // Add your specific height
+  width: "410px", 
+  height: "250px",
   borderRadius: theme.spacing(2),
 }));
 
@@ -35,6 +34,7 @@ function MonthlySummary() {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedDate, setSelectedDate] = useState(dayjs().date(1));
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [tagData, setTagData] = useState(null);
 
   const handleMonthChange = (date) => {
@@ -48,7 +48,6 @@ function MonthlySummary() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             views={['month', 'year']}
-            label="Select Month and Year"
             value={selectedDate}
             onChange={handleMonthChange}
             inputFormat="MM/yyyy"
@@ -63,32 +62,48 @@ function MonthlySummary() {
       <Grid container spacing={1}>
         <Grid xs={4}>
           <Stack direction="row" spacing={2}>
-          <ExpenseTable  selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              setTagData={setTagData}>  
-          </ExpenseTable>
-          </Stack>
-          <Stack direction="row" spacing={2}>
-          <StyledPaper >
-            <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
-           </StyledPaper> 
+          <ExpenseTable 
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          onTagClick={(tag) => {
+            setTagData(tag);
+            setIsTagModalOpen(true);
+          }}
+          />
           </Stack>
         </Grid>
-        <Grid xs={5}>
-        <TagSummary tag={tagData} selectedYear={selectedYear} selectedMonth={selectedMonth} > </TagSummary>
+
+        <Grid xs={3}>
+        <ExpenseMonthlyCategory category="Outside Food" selectedYear={selectedYear} width={300} height={150} />  
+        <ExpenseMonthlyCategory category="Takeway" selectedYear={selectedYear} width={300} height={150} />                  
+        <ExpenseMonthlyCategory category="Shopping" selectedYear={selectedYear} width={300} height={150} />         
         </Grid>
         <Grid xs={3}>
-        <Stack>
-        <ExpenseMonthlyCategory category="Outside Food" selectedYear={selectedYear} width={300} height={150} />  
-        <ExpenseMonthlyCategory category="Groceries" selectedYear={selectedYear} width={300} height={150} />         
-        <ExpenseMonthlyCategory category="Transportation" selectedYear={selectedYear} width={300} height={150} />         
-        <ExpenseMonthlyCategory category="Takeway" selectedYear={selectedYear} width={300} height={150} />         
-        <ExpenseMonthlyCategory category="Shopping" selectedYear={selectedYear} width={300} height={150} />         
+        <Stack> 
+        <ExpenseMonthlyCategory category="Groceries" selectedYear={selectedYear} width={300} height={150} />  
+        <ExpenseMonthlyCategory category="Transportation" selectedYear={selectedYear} width={300} height={150} />                     
+        </Stack> 
+        </Grid>
+        <Grid xs={2}>
+        <Stack> 
+        <StyledPaper >
+            <ExpenseYearMonthlyGraph selectedYear={selectedYear} width={400} height={200} />         
+           </StyledPaper>      
         </Stack> 
         </Grid>
       </Grid>
+
+      <TagSummaryModal
+          open={isTagModalOpen}
+          onClose={() => setIsTagModalOpen(false)}
+          tag={tagData}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+        />
     </Box>
-  );
+
+    
+  ); 
 }
 
 export default MonthlySummary;

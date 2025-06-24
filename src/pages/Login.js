@@ -27,7 +27,7 @@ function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful!");
-      navigate("/saved"); // Redirect after login
+      navigate("/dashboard"); // Redirect after login
     } catch (error) {
       setError("Invalid email or password. Please try again.");
       console.error("Login error:", error.message);
@@ -39,7 +39,7 @@ function Login() {
     try {
       await signInWithPopup(auth, GoogleAuthProvider);
       console.log("Google sign-in successful!");
-      navigate("/saved"); // Redirect after login
+      navigate("/dashboard"); // Redirect after login
     } catch (error) {
       setError("Google login failed. Please try again.");
       console.error("Google login error:", error.message);

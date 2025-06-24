@@ -1,99 +1,74 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import React from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography
+} from "@mui/material";
 import dayjs from "dayjs";
+import useFetchWithToken from "../../firebase/useFetchWithToken";
 
-const TagSummary = ({tag, selectedYear, selectedMonth }) => {
+const TagSummaryModal = ({ open, onClose, tag, selectedYear, selectedMonth }) => {
+  const formatDate = (date) => dayjs(date).format("MMMM DD");
 
-  const [data, setData] = useState(null);
-
-  const formatDate = (date) => {
-    // Assuming `date` is a string in a format that dayjs can parse
-    const formattedDate = dayjs(date).format("MMMM DD"); // Format the date as 'Month Day'
-    return formattedDate;
-  };
-
-  useEffect(() => {
-    axios
-      .get(
-        `http://127.0.0.1:8000/api/expenses_by_tag?tag_id=${tag?.id}&year=${selectedYear}&month=${selectedMonth}`
-      )
-      .then((response) => {
-        console.log('res tag', response);
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, [selectedYear, selectedMonth, tag]);
-
-
-  let sortedRows = [];
-
-  if (!data) {
-    return <div>Select Tag...</div>;
-  }
+  const url = `http://127.0.0.1:8000/api/tags/expenses_by_tag?tag_id=${tag?.id}&year=${selectedYear}&month=${selectedMonth}`;
+  const { data, loading, error } = useFetchWithToken(url);
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 400 }} size="small" aria-label="a dense table">
-      <TableHead>
-        <TableRow>
-            <TableCell >
-            Category
-            </TableCell>
-            <TableCell >
-            Amount
-            </TableCell>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        Tag Summary - {tag?.name || "No Tag Selected"}
+      </DialogTitle>
 
-            <TableCell >
-            Date
-            </TableCell>
+      <DialogContent dividers>
+        {loading && <Typography>Loading...</Typography>}
+        {error && <Typography color="error">Error loading data.</Typography>}
+        {!data && !loading && <Typography>Select a tag to view summary.</Typography>}
         
-        </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow
-            sx={{
-              "&:last-child td, &:last-child th": { border: 0 },
-              backgroundColor: "#f2f2f2",
-              fontWeight: "bold",
-            }}
-          >
-            <TableCell component="th" scope="row">
-              Total
-            </TableCell>
-            <TableCell >£{data.total_monthly_amount} </TableCell>
-            <TableCell >£{data.total_yearly_amount} in {selectedYear} </TableCell>
-          </TableRow>
-          {data.expenses.map((row, index) => (
-            <React.Fragment key={index}>
-              <TableRow
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                }}
-              >
-                <TableCell component="th" scope="row">
-            
-                  {row.description}
-                </TableCell>
-                <TableCell >£{row.amount}</TableCell>
-                <TableCell >{formatDate(row.date)}</TableCell>
-              </TableRow>
-              <TableRow>
-              </TableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        {data && (
+          <TableContainer component={Paper}>
+            <Table size="small" aria-label="tag summary table">
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>Category</strong></TableCell>
+                  <TableCell><strong>Amount</strong></TableCell>
+                  <TableCell><strong>Date</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow sx={{ backgroundColor: "#f2f2f2", fontWeight: "bold" }}>
+                  <TableCell>Total</TableCell>
+                  <TableCell>£{data.total_monthly_amount}</TableCell>
+                  <TableCell>£{data.total_yearly_amount} in {selectedYear}</TableCell>
+                </TableRow>
+
+                {data.expenses.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.description}</TableCell>
+                    <TableCell>£{row.amount}</TableCell>
+                    <TableCell>{formatDate(row.date)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default TagSummary;
+export default TagSummaryModal;

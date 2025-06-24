@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from 'material-react-table';
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
-  Box,
   Select,
   MenuItem,
   Snackbar,
   Alert,
 } from '@mui/material';
+import { useAuth } from '../../AuthContext';
+import useFetchWithToken from '../../firebase/useFetchWithToken';
 
 const ExpenseTable = () => {
-  const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
   const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState({
     description: '',
@@ -28,41 +29,36 @@ const ExpenseTable = () => {
     date: '',
     tag: '',
     category: '',
-    payment_method: '',
-    account: '',
+    payment_method: 'Card',
+    account: '1',
   });
   const [isEdit, setIsEdit] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // State for dropdowns
-  const [tags, setTags] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const { data: tags } = useFetchWithToken('http://127.0.0.1:8000/api/tags/');
+  const { data: categories } = useFetchWithToken('http://127.0.0.1:8000/api/categories/');
+  const {
+    data: expensesData,
+    loading: isLoading,
+    error,
+    refetch: fetchExpenses,
+  } = useFetchWithToken('http://127.0.0.1:8000/api/expenses?page=1&page_size=10000&sort_field=date&sort_order=desc');
+
+  // Setup hooks for saving (create or update)
+  const {
+    refetch: createExpense,
+  } = useFetchWithToken('http://127.0.0.1:8000/api/expenses/create/', 'POST', formData, false);
+
+  const {
+    refetch: updateExpense,
+  } = useFetchWithToken(`http://127.0.0.1:8000/api/expenses/${formData.id}/update/`, 'PUT', formData, false);
+
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const [tagsRes, categoriesRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/tags/'),
-          axios.get('http://127.0.0.1:8000/api/categories/'),
-        ]);
-        setTags(tagsRes.data);
-        setCategories(categoriesRes.data);
-      } catch (error) {
-        console.error('Error fetching related data:', error);
-      }
-    };
-    fetchAllData();
-  }, []);
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/api/expenses', {
-        params: { page: 1, page_size: 10000, sort_field: 'date', sort_order: 'desc' },
-      });
-      // setData(response.data.data);
-      const fetchedData = response.data.data.map(item => ({
+    if (expensesData) {
+      const mappedData = expensesData.data.map((item) => ({
         id: item.id,
         description: item.description,
         amount: item.amount,
@@ -70,41 +66,11 @@ const ExpenseTable = () => {
         tag: item.tag,
         category: item.category,
         payment_method: item.payment_method,
-        account: item.account?.id || 1,
+        account: item.account?.id || '1',
       }));
-      setData(fetchedData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
+      setData(mappedData);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const columns = [
-    { accessorKey: 'description', header: 'Description' },
-    { accessorKey: 'amount', header: 'Amount' },
-    { accessorKey: 'date', header: 'Date' },
-    {
-      accessorKey: 'tag',
-      header: 'Tag',
-      Cell: ({ row }) => row.original.tag?.name || '',
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      Cell: ({ row }) => row.original.category?.name || '',
-    },
-    {
-      accessorKey: 'account',
-      header: 'Account',
-      Cell: ({ row }) => row.original.account || 'N/A',  // Display account ID or 'N/A'
-    },
-  ];
-
+  }, [expensesData]);
 
   const handleOpenDialog = (row) => {
     if (row) {
@@ -113,11 +79,10 @@ const ExpenseTable = () => {
         description: row.original.description,
         amount: row.original.amount,
         date: row.original.date,
-        tag: row.original.tag?.id || '',  // Ensure tag ID is selected
-        category: row.original.category?.id || '',  // Ensure category ID is selected
+        tag: row.original.tag?.id || '',
+        category: row.original.category?.id || '',
         payment_method: row.original.payment_method,
         account: row.original.account,
-        user:1
       });
       setIsEdit(true);
     } else {
@@ -146,29 +111,64 @@ const ExpenseTable = () => {
   const handleSave = async () => {
     try {
       if (isEdit) {
-        await axios.put(`http://127.0.0.1:8000/api/expenses/${formData.id}/update/`, formData);
+        await updateExpense();
         setSuccessMessage('Expense updated successfully!');
       } else {
-        await axios.post('http://127.0.0.1:8000/api/expenses/create/', formData);
+        await createExpense();
         setSuccessMessage('Expense added successfully!');
       }
-      fetchData();
+      await fetchExpenses();
       setOpenDialog(false);
     } catch (error) {
+      console.error(error);
       setErrorMessage('Error saving data. Please try again!');
     }
   };
 
   const handleDelete = async (ids) => {
     if (!window.confirm('Are you sure you want to delete?')) return;
+
     try {
-      await Promise.all(ids.map((id) => axios.delete(`http://127.0.0.1:8000/api/expenses/${id}/delete/`)));
-      setData((prev) => prev.filter((item) => !ids.includes(item.id)));
+      const token = await user.getIdToken();
+      await Promise.all(
+        ids.map(async (id) => {
+          await fetch(`http://127.0.0.1:8000/api/expenses/${id}/delete/`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+      await fetchExpenses();
       alert('Selected expenses deleted successfully!');
     } catch (error) {
+      console.error(error);
       alert('Failed to delete.');
     }
   };
+
+  const columns = [
+    { accessorKey: 'description', header: 'Description' },
+    { accessorKey: 'amount', header: 'Amount' },
+    { accessorKey: 'date', header: 'Date' },
+    {
+      accessorKey: 'tag',
+      header: 'Tag',
+      Cell: ({ row }) => row.original.tag?.name || '',
+    },
+    {
+      accessorKey: 'category',
+      header: 'Category',
+      Cell: ({ row }) => row.original.category?.name || '',
+    },
+    {
+      accessorKey: 'account',
+      header: 'Account',
+      Cell: ({ row }) => row.original.account || 'N/A',
+    },
+  ];
 
   const renderRowActions = ({ row }) => (
     <Box sx={{ display: 'flex', gap: '4px' }}>
@@ -211,10 +211,10 @@ const ExpenseTable = () => {
           <TextField margin="dense" label="Amount" type="number" fullWidth variant="outlined" name="amount" value={formData.amount} onChange={handleFormChange} />
           <TextField margin="dense" label="Date" type="date" fullWidth variant="outlined" name="date" value={formData.date} onChange={handleFormChange} />
           <Select fullWidth margin="dense" name="tag" value={formData.tag} onChange={handleFormChange}>
-            {tags.map((tag) => (<MenuItem key={tag.id} value={tag.id}>{tag.name}</MenuItem>))}
+            {tags?.map((tag) => (<MenuItem key={tag.id} value={tag.id}>{tag.name}</MenuItem>))}
           </Select>
           <Select fullWidth margin="dense" name="category" value={formData.category} onChange={handleFormChange}>
-            {categories.map((category) => (<MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>))}
+            {categories?.map((category) => (<MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>))}
           </Select>
           <TextField margin="dense" label="Payment Method" fullWidth variant="outlined" name="payment_method" value={formData.payment_method} onChange={handleFormChange} />
           <TextField margin="dense" label="Account" fullWidth variant="outlined" name="account" value={formData.account} onChange={handleFormChange} />

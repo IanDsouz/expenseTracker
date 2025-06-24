@@ -11,8 +11,10 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import axios from "axios";
+
 import ExpenseTable from "../../components/Expense/ExpenseTable";
+import useFetchWithToken from "../../firebase/useFetchWithToken";
+import { useAuth } from "../../AuthContext";
 
 const DemoPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -28,31 +30,58 @@ function AdminPage() {
   const [tagsNotFound, setTagsNotFound] = useState([]);
   const [tags, setTags] = useState([]);
   const [expensesToUpdate, setExpensesToUpdate] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const [openModal, setOpenModal] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categories, setCategories] = useState([]);
   const [tagDescription, setTagDescription] = useState(null);
 
+  const { user } = useAuth();
+
+  const urlTags = "http://127.0.0.1:8000/api/tags/"
+  const { data:tagsData, loading:tagsLoading } = useFetchWithToken(urlTags);
+
+  const urlCategory = "http://127.0.0.1:8000/api/categories/"
+  const { data: categoriesData, loading: categoriesLoading } = useFetchWithToken(urlCategory);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tagsResponse, categoriesResponse] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/api/tags/"),
-          axios.get("http://127.0.0.1:8000/api/categories/"),
-        ]);
-        const uniqueTags = tagsResponse.data.filter(
-          (tag, index, self) => index === self.findIndex((t) => t.name === tag.name)
-        );
-        setTags(uniqueTags);
-        setCategories(categoriesResponse.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+    if (tagsData) {
+      const uniqueTags = tagsData.filter(
+        (tag, index, self) => index === self.findIndex((t) => t.name === tag.name)
+      );
+      setTags(uniqueTags);
+    }
+    if (categoriesData) {
+      setCategories(categoriesData);
+    }
+  }, [tagsData, categoriesData]);
+
+  const fetchWithToken = async (url, method = "GET", body = null) => {
+    if (!user) throw new Error("User not authenticated");
+
+    const token = await user.getIdToken();
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      method,
     };
-    fetchData();
-  }, []);
+
+    if (body) {
+      config.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Fetch failed");
+    }
+
+    return response.json();
+  };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -69,22 +98,29 @@ function AdminPage() {
 
     try {
       setUploading(true);
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/expense/check-tags/",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+
+      const token = await user.getIdToken();
+      const response = await fetch("http://127.0.0.1:8000/api/expense/check-tags", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      console.log('res', response);
 
       if (response.status === 206) {
+        const data = await response.json();
         setUploadMessage("Some tags were not found.");
-        setTagsNotFound(response.data.descriptions);
-        setExpensesToUpdate(response.data.expenses);
+        setTagsNotFound(data.descriptions);
+        setExpensesToUpdate(data.expenses);
       } else if (response.status === 200) {
         setUploadMessage("No tags missing. Expenses processed successfully!");
         setTagsNotFound([]);
         setExpensesToUpdate([]);
+      } else {
+        setUploadMessage("Unexpected server response.");
       }
     } catch (error) {
       setUploadMessage("File upload failed. Please try again.");
@@ -101,11 +137,14 @@ function AdminPage() {
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/tags/create/", {
-        name: newTagName,
-        category: selectedCategory.id,
-      });
-      const newTag = response.data;
+      const newTag = await fetchWithToken(
+        "http://127.0.0.1:8000/api/tags/create/",
+        "POST",
+        {
+          name: newTagName,
+          category: selectedCategory.id,
+        }
+      );
       setTags([...tags, newTag]);
       setOpenModal(false);
       handleTagSelection(tagDescription, newTag);
@@ -118,6 +157,7 @@ function AdminPage() {
     try {
       const expenseToUpdate = expensesToUpdate.find((expense) => expense.description === description);
       if (expenseToUpdate) {
+        expenseToUpdate.tag = selectedTag.id;
         console.log("Updating expense:", description, selectedTag);
       }
     } catch (error) {
@@ -127,14 +167,16 @@ function AdminPage() {
 
   const handleSubmitExpenses = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/expense/create/", {
-        expenses: expensesToUpdate,
-      });
-      if (response.status === 201) {
-        setUploadMessage("Expenses created successfully!");
-        setTagsNotFound([]);
-        setExpensesToUpdate([]);
-      }
+      await fetchWithToken(
+        "http://127.0.0.1:8000/api/expense/create/",
+        "POST",
+        {
+          expenses: expensesToUpdate,
+        }
+      );
+      setUploadMessage("Expenses created successfully!");
+      setTagsNotFound([]);
+      setExpensesToUpdate([]);
     } catch (error) {
       console.error("Error submitting expenses:", error);
     }
