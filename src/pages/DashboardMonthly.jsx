@@ -5,7 +5,7 @@ import Container from '@mui/material/Container';
 function DashboardMonthly() {
 
   return (
-  <Container maxWidth="xl">
+  <Container maxWidth="xl" disableGutters>
     <MonthlySummary></MonthlySummary>
   </Container>
   );

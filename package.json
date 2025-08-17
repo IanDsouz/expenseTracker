@@ -7,8 +7,7 @@
     "@emotion/styled": "^11.13.0",
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^6.1.7",
-    "@mui/material": "^6.1.7",
-    "@mui/styled-engine-sc": "^5.14.11",
+    "@mui/material": "^6.4.12",
     "@mui/x-data-grid": "^7.22.2",
     "@mui/x-date-pickers": "^7.22.2",
     "@testing-library/jest-dom": "^5.17.0",
@@ -17,6 +16,7 @@
     "axios": "^1.6.2",
     "bootstrap": "^5.3.2",
     "dayjs": "^1.11.10",
+    "firebase": "^11.5.0",
     "material-react-table": "^3.0.1",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
@@ -25,7 +25,6 @@
     "react-scripts": "5.0.1",
     "recharts": "^2.8.0",
     "rm": "^0.1.8",
-    "styled-components": "^5.3.11",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

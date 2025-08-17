@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { styled } from "@mui/material/styles";
+import useFetchWithToken from '../firebase/useFetchWithToken';
 
 // Utility for formatting currency
 const formatCurrency = (amount) =>
@@ -33,31 +33,29 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const ExpenseTable = ({ selectedYear, selectedMonth, setTagData }) => {
-  const [data, setData] = useState(null); // Store API response
   const [rows, setRows] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [sortBy, setSortBy] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
 
+  // Use authenticated API call
+  const { data, loading, error } = useFetchWithToken(
+    `http://127.0.0.1:8000/api/expense_summary/${selectedYear}/${selectedMonth}`
+  );
+
   useEffect(() => {
-    axios
-      .get(
-        `http://127.0.0.1:8000/api/expense_summary/${selectedYear}/${selectedMonth}`
-      )
-      .then((response) => {
-        setData(response.data); // Store entire response
-        setRows(
-          response.data.expenses.map((expense) => ({
-            name: expense.name,
-            total: expense.total,
-            plannedExpense: expense.planned_expense,
-            difference: expense.planned_expense - expense.total,
-            expenses: expense.expenses,
-          }))
-        );
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, [selectedYear, selectedMonth]);
+    if (data) {
+      setRows(
+        data.expenses.map((expense) => ({
+          name: expense.name,
+          total: expense.total,
+          plannedExpense: expense.planned_expense,
+          difference: expense.planned_expense - expense.total,
+          expenses: expense.expenses,
+        }))
+      );
+    }
+  }, [data]);
 
   const handleRowClick = (index) => {
     setExpandedRow(expandedRow === index ? null : index);
@@ -103,7 +101,9 @@ const ExpenseTable = ({ selectedYear, selectedMonth, setTagData }) => {
     return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
   });
 
-  if (!data) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  if (loading) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  if (error) return <Typography sx={{ p: 2 }} color="error">Error loading data</Typography>;
+  if (!data) return <Typography sx={{ p: 2 }}>No data available</Typography>;
 
   return (
 <TableContainer component={Paper} sx={{ maxHeight: 450 }}>
