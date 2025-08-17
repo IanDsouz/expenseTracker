@@ -1,14 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { useAuth } from '../../AuthContext';
 
 const MonthlyIncomeExpenseChart = () => {
+  const { user } = useAuth();
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const incomeResponse = await fetch('http://localhost:8000/api/incomes/monthly-total/');
-        const expenseResponse = await fetch('http://localhost:8000/api/expenses/monthly-total/');
+        if (!user) return;
+        
+        const token = await user.getIdToken();
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        };
+        
+        const incomeResponse = await fetch('http://localhost:8000/api/incomes/monthly-total/', {
+          headers: authHeaders
+        });
+        const expenseResponse = await fetch('http://localhost:8000/api/expenses/monthly-total/', {
+          headers: authHeaders
+        });
 
         const incomeData = await incomeResponse.json();
         const expenseData = await expenseResponse.json();
@@ -26,7 +40,7 @@ const MonthlyIncomeExpenseChart = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   return (
     <BarChart

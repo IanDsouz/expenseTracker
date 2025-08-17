@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import {
   BarChart,
@@ -11,28 +10,15 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import useFetchWithToken from '../firebase/useFetchWithToken';
 
 const ExpenseYearlyAllMonthlyBarStacked = ({ selectedYear, width = "100%", height = 400 }) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Use authenticated API call
+  const { data: apiData, loading, error } = useFetchWithToken(
+    `http://127.0.0.1:8000/api/expense_all_yearly_monthly_total/${selectedYear || 2021}`
+  );
 
-  useEffect(() => {
-    setLoading(true);
-    axios
-      .get(`http://127.0.0.1:8000/api/expense_all_yearly_monthly_total/2021`)
-      .then((response) => {
-        const apiData = response.data.data || [];
-        setData(apiData);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        setError("An error occurred while fetching data.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [selectedYear]);
+  const data = apiData?.data || [];
 
   const colors = ["#8884d8", "#82ca9d", "#ffc658", "#17becf", "#FF5733"]; // Add more colors if needed
 

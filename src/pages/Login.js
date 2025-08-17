@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -9,42 +9,69 @@ import {
   Card,
   CardContent,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, GoogleAuthProvider } from "../../src/firebase/firebase";
-import { useNavigate } from "react-router-dom";
+import { auth, GoogleAuthProvider } from "../firebase/firebase";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location]);
 
   // Email/Password Login
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
+    
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful!");
-      navigate("/dashboard"); // Redirect after login
+      // Navigation will be handled by useEffect
     } catch (error) {
       setError("Invalid email or password. Please try again.");
       console.error("Login error:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Google Login
   const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
+    
     try {
       await signInWithPopup(auth, GoogleAuthProvider);
       console.log("Google sign-in successful!");
-      navigate("/dashboard"); // Redirect after login
+      // Navigation will be handled by useEffect
     } catch (error) {
       setError("Google login failed. Please try again.");
       console.error("Google login error:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Don't render if already authenticated
+  if (user) {
+    return null;
+  }
 
   return (
     <Container
@@ -55,9 +82,17 @@ function Login() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1300, // Higher than Material-UI default modals
       }}
     >
-      <Card sx={{ width: "100%", boxShadow: 3, borderRadius: 4 }}>
+      <Card sx={{ 
+        width: "100%", 
+        boxShadow: 3, 
+        borderRadius: 4,
+        position: "relative",
+        zIndex: 1301, // Ensure card is above container
+      }}>
         <CardContent>
           <Box textAlign="center" mb={2}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -86,6 +121,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -97,12 +133,14 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
+              disabled={loading}
               sx={{
                 mt: 2,
                 mb: 2,
@@ -110,7 +148,7 @@ function Login() {
                 borderRadius: "8px",
               }}
             >
-              Login
+              {loading ? <CircularProgress size={24} /> : "Login"}
             </Button>
           </Box>
 
@@ -123,13 +161,14 @@ function Login() {
             variant="outlined"
             color="secondary"
             onClick={handleGoogleLogin}
+            disabled={loading}
             sx={{
               py: 1.5,
               borderRadius: "8px",
               textTransform: "none",
             }}
           >
-            Sign in with Google
+            {loading ? <CircularProgress size={24} /> : "Sign in with Google"}
           </Button>
 
           <Typography
@@ -143,6 +182,7 @@ function Login() {
               variant="text"
               color="primary"
               onClick={() => navigate("/signup")}
+              disabled={loading}
             >
               Sign Up
             </Button>

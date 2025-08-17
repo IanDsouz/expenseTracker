@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
 import {
   PieChart,
   Pie,
@@ -8,8 +7,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
+import useFetchWithToken from '../firebase/useFetchWithToken';
 
 const COLORS = [
   "#0088FE",
@@ -21,24 +19,21 @@ const COLORS = [
 ]; // You can add more colors as needed
 
 const ExpenseMonthlyPie = ({ selectedYear, selectedMonth }) => {
-  const [data, setData] = useState(null);
+  // Use authenticated API call
+  const { data, loading, error } = useFetchWithToken(
+    `http://127.0.0.1:8000/api/expense_summary_top/${selectedYear}/${selectedMonth}`
+  );
 
-  useEffect(() => {
-    axios
-      .get(
-        `http://127.0.0.1:8000/api/expense_summary_top/${selectedYear}/${selectedMonth}`
-      )
-      .then((response) => {
-        console.log("expense_summary_top",response);
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, [selectedYear, selectedMonth]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading data</div>;
+  }
 
   if (!data) {
-    return <div>Loading...</div>;
+    return <div>No data available</div>;
   }
 
   // Filter out categories with zero values

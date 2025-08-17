@@ -5,21 +5,32 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useAuth } from '../../AuthContext';
 const ExpenseIncomeUI = ({ selectedYear, width = "100%", height = 400 }) => {
+  const { user } = useAuth();
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (!user) return;
+        
+        const token = await user.getIdToken();
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        };
+        
         const incomeResponse = await fetch(
-          `http://localhost:8000/api/incomes/yearly-total/?year=${selectedYear}`
+          `http://localhost:8000/api/incomes/yearly-total/?year=${selectedYear}`,
+          { headers: authHeaders }
         );
         const expenseResponse = await fetch(
-          `http://127.0.0.1:8000/api/year_monthly_expense/${selectedYear}`
+          `http://127.0.0.1:8000/api/year_monthly_expense/${selectedYear}`,
+          { headers: authHeaders }
         );
 
         const incomeJson = await incomeResponse.json();
@@ -36,7 +47,7 @@ const ExpenseIncomeUI = ({ selectedYear, width = "100%", height = 400 }) => {
     };
 
     fetchData();
-  }, [selectedYear]);
+  }, [selectedYear, user]);
 
   return (
         <ResponsiveContainer width={width} height={height}>

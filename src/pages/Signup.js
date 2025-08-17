@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -8,10 +8,12 @@ import {
   Alert,
   Card,
   CardContent,
+  CircularProgress,
 } from "@mui/material";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../src/firebase/firebase";
-import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase/firebase";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 function Signup() {
   const [name, setName] = useState(""); // Full name
@@ -19,16 +21,29 @@ function Signup() {
   const [password, setPassword] = useState(""); // Password
   const [confirmPassword, setConfirmPassword] = useState(""); // Confirm Password
   const [error, setError] = useState(""); // Show error if any
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location]);
 
   // Handle Signup
   const handleSignup = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
+    setLoading(true);
 
     // Passwords match check
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
+      setLoading(false);
       return;
     }
 
@@ -46,12 +61,19 @@ function Signup() {
       });
 
       console.log("Signup successful!");
-      navigate("/saved"); // Redirect after signup
+      // Navigation will be handled by useEffect
     } catch (error) {
       setError(error.message || "Error creating account.");
       console.error("Signup error:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Don't render if already authenticated
+  if (user) {
+    return null;
+  }
 
   return (
     <Container
@@ -62,9 +84,17 @@ function Signup() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
+        zIndex: 1300, // Higher than Material-UI default modals
       }}
     >
-      <Card sx={{ width: "100%", boxShadow: 3, borderRadius: 4 }}>
+      <Card sx={{ 
+        width: "100%", 
+        boxShadow: 3, 
+        borderRadius: 4,
+        position: "relative",
+        zIndex: 1301, // Ensure card is above container
+      }}>
         <CardContent>
           <Box textAlign="center" mb={2}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -95,6 +125,7 @@ function Signup() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
 
             {/* Email */}
@@ -108,6 +139,7 @@ function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
 
             {/* Password */}
@@ -121,6 +153,7 @@ function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
 
             {/* Confirm Password */}
@@ -133,6 +166,7 @@ function Signup() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               variant="outlined"
+              disabled={loading}
             />
 
             {/* Signup Button */}
@@ -141,6 +175,7 @@ function Signup() {
               fullWidth
               variant="contained"
               color="primary"
+              disabled={loading}
               sx={{
                 mt: 3,
                 mb: 2,
@@ -148,7 +183,7 @@ function Signup() {
                 borderRadius: "8px",
               }}
             >
-              Sign Up
+              {loading ? <CircularProgress size={24} /> : "Sign Up"}
             </Button>
           </Box>
 
@@ -163,7 +198,8 @@ function Signup() {
             <Button
               variant="text"
               color="primary"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/login")}
+              disabled={loading}
             >
               Login
             </Button>

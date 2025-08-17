@@ -1,25 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Container, CircularProgress, Grid, List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@mui/material';
-import axios from 'axios';
+import React from 'react';
+import { Container, CircularProgress, Grid, Box } from '@mui/material';
 import styles from './SavingsComponent.module.css';
 import SavingAreaCard from './SavingsAreaCard';
+import useFetchWithToken from '../../firebase/useFetchWithToken';
 
 const SavingsComponent = () => {
-    const [savingAreas, setSavingAreas] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/saving_areas/?ordering=priority')
-            .then((response) => {
-                console.log('rea', response.data);
-                setSavingAreas(response.data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error fetching data:', error);
-                setLoading(false);
-            });
-    }, []);
+    // Use authenticated API call
+    const { data: savingAreas, loading, error } = useFetchWithToken('http://127.0.0.1:8000/api/saving_areas/?ordering=priority');
 
     if (loading) {
         return (
@@ -29,13 +16,21 @@ const SavingsComponent = () => {
         );
     }
 
+    if (error) {
+        return (
+            <Container>
+                <p>Error loading savings data</p>
+            </Container>
+        );
+    }
+
     return (
         <div className={styles.scrollableList}>
             <Grid container spacing={2}>
-                {savingAreas.map((savingArea) => (
-                    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }} key={savingArea.id}>
+                {savingAreas?.map((savingArea) => (
+                    <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }} key={savingArea.id}>
                         <SavingAreaCard savingArea={savingArea} />
-                    </List>
+                    </Box>
                 ))}
             </Grid>
         </div>
